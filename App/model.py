@@ -52,14 +52,13 @@ def initCatalog(option):
     Inicializa el catálogo de obras del MoMA. Crea una lista vacia para guardar
     todos los artistas y las obras de arte. Retorna el catalogo inicializado.
     """
-    catalog = {'artists': None,
-               'artworks': None,}
     if option == 1:
-        catalog['artists'] = lt.newList(datastructure="ARRAY_LIST", cmpfunction= compareArtists)
-        catalog['artworks'] = lt.newList(datastructure="ARRAY_LIST", cmpfunction= cmpArtworkByDateAcquired)
-    elif option == 2:
-        catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= compareArtists)
-        catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= cmpArtworkByDateAcquired)
+        catalog = {'artists': None,
+               'artworks': None,
+               'Medium': None}
+        catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= compareArtists) #Función de comparación
+        catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= cmpArtworkByDateAcquired) #Función de comparación
+        catalog['Medium'] = mp.newMap()
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
@@ -97,6 +96,21 @@ def newArtwork(name, date_acqu, credit, artist, date, medium, dimensions, depart
     return artwork
 
 # Funciones de CONSULTA
+
+def MediumDateMap(catalog, medium):
+    for artwork in lt.iterator(catalog["artworks"]):
+        artwork_medium = artwork["Medium"]
+        if mp.contains(catalog['Medium'], artwork_medium) == False:
+            medium_list = lt.newList(datastructure='SINGLE_LINKED', cmpfunction=cmpArtworkByDateAcquired)
+            lt.addLast(medium_list, artwork)
+            mp.put(catalog['Medium'], artwork_medium, medium_list)
+        else:
+            medium_list = mp.get(catalog['Medium'], artwork_medium)['value']
+            lt.addLast(medium_list, artwork)
+    medium_map = catalog['Medium']
+    if mp.contains(medium_map, medium):
+        medium_elements = mp.get(medium_map, medium)['value']
+    return medium_elements
 
 def give_artists_byID(catalog, const_ids):
     ids_list = const_ids[1:-1].split(",") # Since split is used, this is a native python list
@@ -296,6 +310,9 @@ def sortArtistDates(list):
     return merge.sort(list, compareArtistsDates)
 
 def sortArtworksDates(list):
+    return merge.sort(list, cmpArtworkByDateAcquired)
+
+def sortMediumDates(list):
     return merge.sort(list, cmpArtworkByDateAcquired)
 
 # ---

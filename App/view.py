@@ -46,6 +46,7 @@ def printMenu():
     print("4 - Clasificar las obras de un artista por técnica")
     print("5 - Clasificar la obra por la nacionalidad de sus creadores")
     print("6 - Transportar obras de un departamento")
+    print("7 - Las n obras más antiguas dado un medio") #Requerimiento Lab 5
     print("0 - Salir")
 
 def initCatalog(option): # the option is for selecting the datastructure
@@ -183,6 +184,20 @@ def print5oldest(artworks_date, sample=5):
             print("Title: " + artwork["Title"] + ", Date: " + artwork["Date"] + ", Medio: " + artwork["Medium"] + ", Dimensiones: " + artwork["Dimensions"])
             i += 1
 
+def printMediumOldest(list, n):
+    try:
+        print("Las "+str(n)+" obras más antiguas son: ")
+        headers = ["Artwork Title", "Date", "Medium"]
+        table = []
+        sublist = lt.subList(list, 1, n)
+        for artwork in lt.iterator(sublist):
+            table.append([artwork['Title'], artwork['Date'], artwork['Medium']])
+        print(tabulate(table,headers, tablefmt="grid"))
+    except:
+        print("El tamaño de elementos supera el tamaño de la lista de las obras.")
+
+
+
 catalog = None
 
 """
@@ -235,6 +250,13 @@ while True:
         print5expensive(artworks_price)
         print("----------------------------------------------------------------------------------")
         print5oldest(artworks_date)
+    
+    elif int(inputs[0]) == 7: #Requerimiento Lab 5
+        medium = input("Indique el medio o técnica de interés: ")
+        medium_map = controller.MediumDateMap(catalog, medium)
+        sorted_list = controller.sortMediumDates(medium_map)
+        n = int(input('Ingrese el número de obras antiguas que desea ver teniendo en cuenta el medio ('+medium+'): '))
+        printMediumOldest(sorted_list, n)
 
     else:
         sys.exit(0)
