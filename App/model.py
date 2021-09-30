@@ -56,8 +56,8 @@ def initCatalog(option):
         catalog = {'artists': None,
                'artworks': None,
                'Medium': None}
-        catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= compareArtists) #Función de comparación
-        catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED", cmpfunction= cmpArtworkByDateAcquired) #Función de comparación
+        catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
+        catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['Medium'] = mp.newMap()
     return catalog
 
@@ -97,16 +97,19 @@ def newArtwork(name, date_acqu, credit, artist, date, medium, dimensions, depart
 
 # Funciones de CONSULTA
 
-def MediumDateMap(catalog, medium):
+def MediumDateMap(catalog):
     for artwork in lt.iterator(catalog["artworks"]):
         artwork_medium = artwork["Medium"]
         if mp.contains(catalog['Medium'], artwork_medium) == False:
-            medium_list = lt.newList(datastructure='SINGLE_LINKED', cmpfunction=cmpArtworkByDateAcquired)
-            lt.addLast(medium_list, artwork)
+            medium_list = lt.newList(datastructure='SINGLE_LINKED')
+            lt.addFirst(medium_list, artwork)
             mp.put(catalog['Medium'], artwork_medium, medium_list)
         else:
             medium_list = mp.get(catalog['Medium'], artwork_medium)['value']
-            lt.addLast(medium_list, artwork)
+            lt.addFirst(medium_list, artwork)
+    return catalog
+
+def MediumSpecificList(catalog, medium):
     medium_map = catalog['Medium']
     if mp.contains(medium_map, medium):
         medium_elements = mp.get(medium_map, medium)['value']

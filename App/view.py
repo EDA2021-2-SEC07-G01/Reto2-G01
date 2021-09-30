@@ -87,6 +87,9 @@ def artworks_department(catalog, department):
 def most_used_technique(techniques_artworks):
     return controller.most_used_technique(techniques_artworks)
 
+def uploadMediumDateMap(catalog):
+    return controller.MediumDateMap(catalog)
+
 # PRINT Functions
 
 def printResultsArtworks(ord_list, sample = 3):
@@ -190,6 +193,7 @@ def printMediumOldest(list, n):
         headers = ["Artwork Title", "Date", "Medium"]
         table = []
         sublist = lt.subList(list, 1, n)
+        print(sublist)
         for artwork in lt.iterator(sublist):
             table.append([artwork['Title'], artwork['Date'], artwork['Medium']])
         print(tabulate(table,headers, tablefmt="grid"))
@@ -212,6 +216,7 @@ while True:
         loadData(catalog)
         ArtistSize(catalog)
         ArtworkSize(catalog)
+        uploadMediumDateMap(catalog)
 
     elif int(inputs[0]) == 2:
         anio_inicial = int(input("Ingrese el año inicial: "))
@@ -253,7 +258,7 @@ while True:
     
     elif int(inputs[0]) == 7: #Requerimiento Lab 5
         medium = input("Indique el medio o técnica de interés: ")
-        medium_map = controller.MediumDateMap(catalog, medium)
+        medium_map = controller.MediumSpecificList(catalog, medium)
         sorted_list = controller.sortMediumDates(medium_map)
         n = int(input('Ingrese el número de obras antiguas que desea ver teniendo en cuenta el medio ('+medium+'): '))
         printMediumOldest(sorted_list, n)

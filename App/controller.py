@@ -100,8 +100,11 @@ def give_artists_byID(catalog, const_ids):
 def most_used_technique(techniques_artworks):
     return model.most_used_technique(techniques_artworks)
 
-def MediumDateMap(catalog, medium):
-    return model.MediumDateMap(catalog, medium)
+def MediumDateMap(catalog):
+    return model.MediumDateMap(catalog)
+
+def MediumSpecificList(catalog, medium):
+    return model.MediumSpecificList(catalog, medium)
 
 def sortMediumDates(list):
     return model.sortMediumDates(list)
