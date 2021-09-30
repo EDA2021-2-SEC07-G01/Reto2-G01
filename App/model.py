@@ -304,6 +304,11 @@ def cmpArtworkByDate(artwork1, artwork2): #Formato = año-mes-día
     except:
         pass
 
+def cmpArtWorkMedium(artwork1, artwork2):
+    d1 = artwork1['Date']
+    d2 = artwork2['Date']
+    return d1 < d2
+
 # Funciones de ordenamiento
 
 def sortArtistDates(list):
@@ -313,7 +318,7 @@ def sortArtworksDates(list):
     return merge.sort(list, cmpArtworkByDateAcquired)
 
 def sortMediumDates(list):
-    return merge.sort(list, cmpArtworkByDateAcquired)
+    return merge.sort(list, cmpArtWorkMedium)
 
 # ---
 def Generate_sublist(catalog, sample):
