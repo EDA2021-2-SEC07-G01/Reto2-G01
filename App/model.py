@@ -55,10 +55,12 @@ def initCatalog(option):
     if option == 1:
         catalog = {'artists': None,
                'artworks': None,
-               'Medium': None}
+               'Medium': None,
+               'Nationality':None}
         catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
-        catalog['Medium'] = mp.newMap()
+        catalog['Medium'] = mp.newMap(maptype="CHAINING", loadfactor=4)
+        catalog['Nationality'] = mp.newMap(maptype="CHAINING", loadfactor=4)
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
