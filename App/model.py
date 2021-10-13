@@ -111,6 +111,27 @@ def MediumDateMap(catalog):
             lt.addFirst(medium_list, artwork)
     return catalog
 
+def ArtworkConsituentID(artwork):
+    id_list = lt.newList(datastructure='ARRAY_LIST')
+    id_artist = artwork["ConstituentID"][1:-1].split(",")
+    for number in id_artist:
+        lt.addLast(id_list, number.strip())
+    return id_list
+
+def NationalityMap(catalog, nationality):
+    artworks_list = lt.newList(datastructure='SINGLE_LINKED')
+    dicc_nationality = catalog["Nationality"]
+    for artist in lt.iterator(catalog["artists"]):
+        if artist['nationality'] == nationality:
+            id_artist = artist['const_id']
+            for artwork in lt.iterator(catalog['artworks']):
+                id_artwork = ArtworkConsituentID(artwork)
+                if lt.isPresent(id_artwork, id_artist):
+                    lt.addFirst(artworks_list, artwork)
+    mp.put(dicc_nationality, nationality, artworks_list)
+    number_artworks = lt.size(artworks_list)
+    return dicc_nationality, number_artworks
+
 def MediumSpecificList(catalog, medium):
     medium_map = catalog['Medium']
     if mp.contains(medium_map, medium):

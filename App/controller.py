@@ -103,6 +103,9 @@ def most_used_technique(techniques_artworks):
 def MediumDateMap(catalog):
     return model.MediumDateMap(catalog)
 
+def NationalityMap(catalog, nationality):
+    return model.NationalityMap(catalog, nationality)
+
 def MediumSpecificList(catalog, medium):
     return model.MediumSpecificList(catalog, medium)
 

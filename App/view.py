@@ -47,6 +47,7 @@ def printMenu():
     print("5 - Clasificar la obra por la nacionalidad de sus creadores")
     print("6 - Transportar obras de un departamento")
     print("7 - Las n obras más antiguas dado un medio") #Requerimiento Lab 5
+    print("8 - Obras por nacionalidad") #Requerimiento Lab 6
     print("0 - Salir")
 
 def initCatalog(option): # the option is for selecting the datastructure
@@ -262,6 +263,11 @@ while True:
         sorted_list = controller.sortMediumDates(medium_map)
         n = int(input('Ingrese el número de obras antiguas que desea ver teniendo en cuenta el medio ('+medium+'): '))
         printMediumOldest(sorted_list, n)
+
+    elif int(inputs[0]) == 8: #Requerimiento Lab 6
+        nationality = input("Indique la nacionalidad de interés: ")
+        nationality_map = controller.NationalityMap(catalog, nationality)
+        print("El número de obras asociadas la nacionalidad "+nationality+ " es: "+str(nationality_map[1]))
 
     else:
         sys.exit(0)
