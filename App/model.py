@@ -59,8 +59,8 @@ def initCatalog(option):
                'Nationality':None}
         catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
-        catalog['Medium'] = mp.newMap(maptype="CHAINING", loadfactor=4)
-        catalog['Nationality'] = mp.newMap(maptype="CHAINING", loadfactor=4)
+        catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.8)
+        catalog['Nationality'] = mp.newMap(maptype="PROBING", loadfactor=0.8)
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
@@ -119,6 +119,7 @@ def ArtworkConsituentID(artwork):
     return id_list
 
 def NationalityMap(catalog, nationality):
+    start_time = time.process_time()
     artworks_list = lt.newList(datastructure='SINGLE_LINKED')
     dicc_nationality = catalog["Nationality"]
     for artist in lt.iterator(catalog["artists"]):
@@ -130,6 +131,9 @@ def NationalityMap(catalog, nationality):
                     lt.addFirst(artworks_list, artwork)
     mp.put(dicc_nationality, nationality, artworks_list)
     number_artworks = lt.size(artworks_list)
+    stop_time = time.process_time()
+    elapsed_time_mseg = (stop_time - start_time)*1000
+    print(elapsed_time_mseg)
     return dicc_nationality, number_artworks
 
 def MediumSpecificList(catalog, medium):
