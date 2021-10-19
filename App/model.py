@@ -46,7 +46,7 @@ los mismos.
 """
 
 # Construccion de modelos
-
+# test branch
 def initCatalog(option):
     """
     Inicializa el catálogo de obras del MoMA. Crea una lista vacia para guardar
