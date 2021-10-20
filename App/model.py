@@ -60,8 +60,9 @@ def initCatalog(option):
         catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
-        catalog['Nationality'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['ConstituentID '] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['BeginDate'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['DateAcquired'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
@@ -89,14 +90,34 @@ def addBirthday(catalog, artist):
         aux = lt.newList(datastructure="SINGLE_LINKED")
     else:
         aux = mp.get(catalog['BeginDate'], artist['BeginDate'])['value']
-    lt.addFirst(aux, artist)        
-    mp.put(catalog['BeginDate'], artist['BeginDate'], aux)
+    new_artist = newArtist(artist['DisplayName'], artist['BeginDate'], artist['EndDate'], artist['Nationality'], artist['Gender'], artist['ConstituentID'])
+    lt.addFirst(aux, new_artist)  
+    mp.put(catalog['BeginDate'], new_artist['birth_date'], aux)
 
-def addNationality(catalog, artist):
+def addDateAcquired(catalog, artwork):
+    """
+    Agrega el par k:v al mapa de DataAcquired del catálogo
+    """
+    if mp.contains(catalog['DateAcquired'], artwork['DateAcquired']) == False:
+        aux = lt.newList(datastructure="SINGLE_LINKED")
+    else:
+        aux = mp.get(catalog['DateAcquired'], artwork['DateAcquired'])['value']
+    new_artwork = newArtwork(artwork['Title'], artwork['DateAcquired'], artwork['CreditLine'], artwork['ConstituentID'], artwork['Date'], artwork['Medium'], artwork['Dimensions'], artwork['Department'], 
+    artwork['Depth (cm)'], artwork['Height (cm)'], artwork['Length (cm)'], artwork['Weight (kg)'], artwork['Width (cm)'], artwork['Seat Height (cm)'])
+    lt.addFirst(aux, new_artwork)
+    mp.put(catalog['DateAcquired'], new_artwork['DateAcquired'], aux)
+
+def addConstituentID(catalog, artist):
     """
     Agrega el par k:v al mapa de BeginDate del catálogo
     """
-    mp.put(catalog['BeginDate'], artist['BeginDate'], artist)
+    if mp.contains(catalog['ConstituentID '], artist['ConstituentID']) == False:
+        aux = lt.newList(datastructure="SINGLE_LINKED")
+    else:
+        aux = mp.get(catalog['ConstituentID'], artist['ConstituentID'])['value']
+    new_artist = newArtist(artist['DisplayName'], artist['BeginDate'], artist['EndDate'], artist['Nationality'], artist['Gender'], artist['ConstituentID'])
+    lt.addFirst(aux, new_artist)  
+    mp.put(catalog['Nationality'], new_artist['const_id'], aux)
 
 # Funciones para creacion de datos
 
@@ -136,23 +157,28 @@ def ArtworkConsituentID(artwork):
         lt.addLast(id_list, number.strip())
     return id_list
 
-def NationalityMap(catalog, nationality):
-    start_time = time.process_time()
-    artworks_list = lt.newList(datastructure='SINGLE_LINKED')
-    dicc_nationality = catalog["Nationality"]
-    for artist in lt.iterator(catalog["artists"]):
-        if artist['nationality'] == nationality:
-            id_artist = artist['const_id']
-            for artwork in lt.iterator(catalog['artworks']):
-                id_artwork = ArtworkConsituentID(artwork)
-                if lt.isPresent(id_artwork, id_artist):
-                    lt.addFirst(artworks_list, artwork)
-    mp.put(dicc_nationality, nationality, artworks_list)
-    number_artworks = lt.size(artworks_list)
-    stop_time = time.process_time()
-    elapsed_time_mseg = (stop_time - start_time)*1000
-    print(elapsed_time_mseg)
-    return dicc_nationality, number_artworks
+def NationalityMap(catalog):
+    contador = 1
+    map_nationality = mp.newMap(maptype="PROBING", loadfactor=0.5)
+    map_values = mp.newMap(maptype="PROBING", loadfactor=0.5)
+    ids = lt.iterator(mp.keySet(catalog["ConstituentID"]))
+    for artwork in catalog['artworks']:
+        artwork_artist = ArtworkConsituentID(artwork)
+        for artist in artwork_artist:
+            if artist in ids:
+                information = mp.get(catalog['ConstituentID'], artist)['value']
+                nationality = information['nationality']
+                if mp.contains(map_nationality, nationality) == False:
+                    list = lt.newList(datastructure='SINGLE_LINKED')
+                    lt.addFirst(list, information)
+                    mp.put(map_nationality, nationality, information)
+                    mp.put(map_values, nationality, contador)
+                else:
+                    contador += 1
+                    list_map = mp.get(map_nationality, nationality)['value']
+                    lt.addFirst(list_map, information)
+                    mp.put(map_values, nationality, contador)
+    return map_nationality, map_values
 
 def MediumSpecificList(catalog, medium):
     medium_map = catalog['Medium']
@@ -171,9 +197,8 @@ def give_artists_byID(catalog, const_ids):
             lt.addLast(name_lists, artist['name'])
     return name_lists
 
-def artistDates(catalog, anio_inicial, anio_final):
+def artistDates(catalog, anio_inicial, anio_final): #Using
     artist_year_list = lt.newList(datastructure="ARRAY_LIST", cmpfunction= compareArtistsDates)
-    #for artist in lt.iterator(catalog["artists"]["elements"]):
     for year in lt.iterator(mp.keySet(catalog["BeginDate"])):
         try:
             if int(year) >= anio_inicial and int(year) <= anio_final:
@@ -185,24 +210,25 @@ def artistDates(catalog, anio_inicial, anio_final):
     sorted_list = sortArtistDates(artist_year_list)
     return sorted_list
 
-def artworksDates(catalog, date_inicial, date_final):
-    artworks_list = lt.newList(datastructure="ARRAY_LIST", cmpfunction= cmpArtworkByDateAcquired)
+def artworksDates(catalog, date_inicial, date_final): #Using
+    artworks_year_list = lt.newList(datastructure="ARRAY_LIST", cmpfunction= cmpArtworkByDateAcquired)
+    initial = date_inicial.split("-")
+    final = date_final.split("-")
     contador = 0
-    for artwork in lt.iterator(catalog["artworks"]):
+    for year in lt.iterator(mp.keySet(catalog["DateAcquired"])):
         try:
-            artwork_date = artwork["DateAcquired"].split("-")
-            initial = date_inicial.split("-")
-            final = date_final.split("-")
+            artwork_date = year.split("-")
             if (datetime.datetime(int(artwork_date[0]), int(artwork_date[1]), int(artwork_date[2])) >= 
-            (datetime.datetime(int(initial[0]), int(initial[1]), int(initial[2])))) and (datetime.datetime(int(artwork_date[0]), int(artwork_date[1]), int(artwork_date[2])) <= 
-            (datetime.datetime(int(final[0]), int(final[1]), int(final[2])))):
-                if "purchase" in artwork["CreditLine"].lower():
-                    contador += 1
-                lt.addLast(artworks_list, artwork)
+            (datetime.datetime(int(initial[0]), int(initial[1]), int(initial[2])))) and (datetime.datetime(int(artwork_date[0]), int(artwork_date[1]), int(artwork_date[2])) <= (datetime.datetime(int(final[0]), int(final[1]), int(final[2])))):
+                artworks = mp.get(catalog["DateAcquired"], year)["value"]
+                for artwork in lt.iterator(artworks):
+                    if "purchase" in artwork["CreditLine"].lower():
+                        contador += 1
+                    lt.addLast(artworks_year_list, artwork)
         except:
-            pass    
-    sorted_list = sortArtworksDates(artworks_list)
-    return sorted_list, contador
+            pass
+    sorted_list = sortArtworksDates(artworks_year_list)
+    return sorted_list, contador 
 
 def artist_technique(catalog, artist_name):
     for artist in lt.iterator(catalog["artists"]):
@@ -296,7 +322,7 @@ def artworks_department(catalog, department):
 
 def compareArtistsDates(artist1, artist2):
     try:
-        if int(artist1["BeginDate"]) <= int(artist2["BeginDate"]):
+        if int(artist1["birth_date"]) <= int(artist2["birth_date"]):
             return True
         else:
             return False
@@ -369,7 +395,6 @@ def sortArtworksDates(list):
 
 def sortMediumDates(list):
     return merge.sort(list, cmpArtWorkMedium)
-
 # ---
 def Generate_sublist(catalog, sample):
     assert(sample <= lt.size(catalog['artworks'])), "Debe indicar un tamaño menor o igual a la cantidad de total de obras de arte"

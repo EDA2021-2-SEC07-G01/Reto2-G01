@@ -57,6 +57,7 @@ def loadArtists(catalog):
     for artist in input_file:
         model.addArtist(catalog, artist)
         model.addBirthday(catalog, artist)
+        model.addConstituentID(catalog, artist)
 
 
 def loadArtworks(catalog):
@@ -67,6 +68,7 @@ def loadArtworks(catalog):
     input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
+        model.addDateAcquired(catalog, artwork)
 
 # Funciones de ordenamiento
 def sortArtworks(sublist, sorting_method):
@@ -104,8 +106,8 @@ def most_used_technique(techniques_artworks):
 def MediumDateMap(catalog):
     return model.MediumDateMap(catalog)
 
-def NationalityMap(catalog, nationality):
-    return model.NationalityMap(catalog, nationality)
+def NationalityMap(catalog):
+    return model.NationalityMap(catalog)
 
 def MediumSpecificList(catalog, medium):
     return model.MediumSpecificList(catalog, medium)

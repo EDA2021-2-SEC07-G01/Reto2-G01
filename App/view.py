@@ -121,16 +121,16 @@ def printResultsArtists(ord_list, sample = 3):
     if size > sample:
         print("Los primeros ", sample, "artistas en el rango dado son: ")
         i = 1
-        j = 0
+        j = -2
         while i <= sample:
             artist = lt.getElement(ord_list, i)
-            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
+            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
             i += 1
         print("----------------------------------------------------------------------------------")
         print("Los últimos ", sample, "artistas en el rango dado son: ")
-        while j < sample:
-            artist = lt.getElement(ord_list, size - j )
-            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
+        while j+2 < sample:
+            artist = lt.getElement(ord_list, size + j )
+            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
             j += 1
 
 def printResultsArtworksNationality(artworks_nationality):
@@ -244,10 +244,9 @@ while True:
         print_artworks_technique(techniques, most_used_tech)
 
     elif int(inputs[0]) == 5:
-        list = artworks_artistnationality(catalog)
-        printResultsArtworksNationality(list)
-        names, artworks = controller.InfoArtworksNationality(catalog, list)
-        printResultsNationalityInfo(names, artworks)
+        nationality_map, values_map = controller.NationalityMap(catalog)
+        print(nationality_map, values_map)
+        #printResultsNationalityInfo(names, artworks)
         
     elif int(inputs[0]) == 6:
         department = input("Departamento del museo: ")
