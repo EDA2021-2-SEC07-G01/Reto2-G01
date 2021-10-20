@@ -46,7 +46,6 @@ los mismos.
 """
 
 # Construccion de modelos
-# test branch
 def initCatalog(option):
     """
     Inicializa el catálogo de obras del MoMA. Crea una lista vacia para guardar
@@ -56,11 +55,13 @@ def initCatalog(option):
         catalog = {'artists': None,
                'artworks': None,
                'Medium': None,
-               'Nationality':None}
+               'Nationality':None,
+               'BeginDate':None}
         catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
-        catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.8)
-        catalog['Nationality'] = mp.newMap(maptype="PROBING", loadfactor=0.8)
+        catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['Nationality'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['BeginDate'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
@@ -70,7 +71,7 @@ def addArtist(catalog, artist):
     Adiciona un artista a la lista de artistas
     """
     aux = newArtist(artist['DisplayName'], artist['BeginDate'], artist['EndDate'], artist['Nationality'], artist['Gender'], artist['ConstituentID'])
-    lt.addLast(catalog['artists'], aux)
+    lt.addFirst(catalog['artists'], aux)
 
 def addArtwork(catalog, artwork):
     """
@@ -78,7 +79,24 @@ def addArtwork(catalog, artwork):
     """
     t = newArtwork(artwork['Title'], artwork['DateAcquired'], artwork['CreditLine'], artwork['ConstituentID'], artwork['Date'], artwork['Medium'], artwork['Dimensions'], artwork['Department'], 
     artwork['Depth (cm)'], artwork['Height (cm)'], artwork['Length (cm)'], artwork['Weight (kg)'], artwork['Width (cm)'], artwork['Seat Height (cm)'])
-    lt.addLast(catalog['artworks'], t)
+    lt.addFirst(catalog['artworks'], t)
+
+def addBirthday(catalog, artist):
+    """
+    Agrega el par k:v al mapa de BeginDate del catálogo
+    """
+    if mp.contains(catalog['BeginDate'], artist['BeginDate']) == False:
+        aux = lt.newList(datastructure="SINGLE_LINKED")
+    else:
+        aux = mp.get(catalog['BeginDate'], artist['BeginDate'])['value']
+    lt.addFirst(aux, artist)        
+    mp.put(catalog['BeginDate'], artist['BeginDate'], aux)
+
+def addNationality(catalog, artist):
+    """
+    Agrega el par k:v al mapa de BeginDate del catálogo
+    """
+    mp.put(catalog['BeginDate'], artist['BeginDate'], artist)
 
 # Funciones para creacion de datos
 
@@ -156,12 +174,14 @@ def give_artists_byID(catalog, const_ids):
 def artistDates(catalog, anio_inicial, anio_final):
     artist_year_list = lt.newList(datastructure="ARRAY_LIST", cmpfunction= compareArtistsDates)
     #for artist in lt.iterator(catalog["artists"]["elements"]):
-    for artist in lt.iterator(catalog["artists"]):
+    for year in lt.iterator(mp.keySet(catalog["BeginDate"])):
         try:
-            if int(artist["birth_date"]) >= anio_inicial and int(artist["birth_date"]) <= anio_final:
-                lt.addLast(artist_year_list, artist)
+            if int(year) >= anio_inicial and int(year) <= anio_final:
+                artists = mp.get(catalog["BeginDate"], year)["value"]
+                for artist in lt.iterator(artists):
+                    lt.addLast(artist_year_list, artist)
         except:
-            pass
+            raise Exception("Error devolviendo los artistas de un rango de fechas")
     sorted_list = sortArtistDates(artist_year_list)
     return sorted_list
 
@@ -276,12 +296,12 @@ def artworks_department(catalog, department):
 
 def compareArtistsDates(artist1, artist2):
     try:
-        if int(artist1["birth_date"]) <= int(artist2["birth_date"]):
+        if int(artist1["BeginDate"]) <= int(artist2["BeginDate"]):
             return True
         else:
             return False
     except:
-        pass
+        raise Exception("Error al comparar los Begin Dates de los artistas")
 
 def compareArtworByPrice(artwork1, artwork2):
     try:

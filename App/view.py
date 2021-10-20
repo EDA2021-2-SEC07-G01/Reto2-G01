@@ -124,13 +124,13 @@ def printResultsArtists(ord_list, sample = 3):
         j = 0
         while i <= sample:
             artist = lt.getElement(ord_list, i)
-            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
+            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
             i += 1
         print("----------------------------------------------------------------------------------")
         print("Los últimos ", sample, "artistas en el rango dado son: ")
         while j < sample:
             artist = lt.getElement(ord_list, size - j )
-            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
+            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
             j += 1
 
 def printResultsArtworksNationality(artworks_nationality):
