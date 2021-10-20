@@ -60,7 +60,8 @@ def initCatalog(option):
         catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
-        catalog['ConstituentID '] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['artistsDict'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['ConstituentID'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['BeginDate'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['DateAcquired'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
     return catalog
@@ -109,16 +110,29 @@ def addDateAcquired(catalog, artwork):
 
 def addConstituentID(catalog, artist):
     """
-    Agrega el par k:v al mapa de BeginDate del catálogo
+    Agrega el par k:v al mapa de ConstID del catálogo
     """
-    if mp.contains(catalog['ConstituentID '], artist['ConstituentID']) == False:
+    if mp.contains(catalog['ConstituentID'], artist['ConstituentID']) == False:
         aux = lt.newList(datastructure="SINGLE_LINKED")
     else:
         aux = mp.get(catalog['ConstituentID'], artist['ConstituentID'])['value']
     new_artist = newArtist(artist['DisplayName'], artist['BeginDate'], artist['EndDate'], artist['Nationality'], artist['Gender'], artist['ConstituentID'])
     lt.addFirst(aux, new_artist)  
-    mp.put(catalog['Nationality'], new_artist['const_id'], aux)
+    mp.put(catalog['ConstituentID'], new_artist['const_id'], aux)
 
+def addartworkstoArtists(catalog, artwork):
+    """
+    Agrega el par k:v al mapa de artistsDict del catálogo
+    """
+    for idArtist in lt.iterator(ArtworkConsituentID(artwork=artwork)): # Recorrer todos los posibles ids de una obra
+        artist = mp.get(catalog['ConstituentID'],idArtist)['value'] # Artist object -> newArtist
+        if mp.contains(catalog['artistsDict'] ,lt.getElement(artist, 1)['name']) == False:
+            aux = lt.newList(datastructure="SINGLE_LINKED")
+        else:
+            aux = mp.get(catalog['artistsDict'], lt.getElement(artist, 1)['name'])['value']
+        lt.addFirst(aux, artwork)  
+        mp.put(catalog['artistsDict'], lt.getElement(artist, 1)['name'], aux) # value es la lista del Artista
+ 
 # Funciones para creacion de datos
 
 def newArtist(name, birth_date, end_date, nationality, gender, const_id):
@@ -151,7 +165,7 @@ def MediumDateMap(catalog):
     return catalog
 
 def ArtworkConsituentID(artwork):
-    id_list = lt.newList(datastructure='ARRAY_LIST')
+    id_list = lt.newList(datastructure='SINGLE_LINKED')
     id_artist = artwork["ConstituentID"][1:-1].split(",")
     for number in id_artist:
         lt.addLast(id_list, number.strip())
@@ -231,28 +245,22 @@ def artworksDates(catalog, date_inicial, date_final): #Using
     return sorted_list, contador 
 
 def artist_technique(catalog, artist_name):
-    for artist in lt.iterator(catalog["artists"]):
-        if artist["name"].strip().lower() == artist_name.lower():
-            const_id = artist["const_id"]
-            break # Se encontró el id del artista buscado
-    contador = 0
-    techniques_artworks = {}
-    for artwork in lt.iterator(catalog["artworks"]):
-        if const_id in (artwork["ConstituentID"][1:-1].split(",")):
-            contador += 1
-            if artwork["Medium"] not in techniques_artworks:
-                artworks_list = lt.newList("ARRAY_LIST")
-                lt.addLast(artworks_list, artwork) 
-                techniques_artworks[artwork["Medium"]] = artworks_list
-            else:
-                artworks_list = techniques_artworks[artwork["Medium"]]
-                lt.addLast(artworks_list, artwork) 
-    return contador, techniques_artworks
+    artworksByArtist = mp.get(catalog['artistsDict'], artist_name)['value']
+    for artwork in lt.iterator(artworksByArtist):
+        if mp.contains(catalog['Medium'], artwork['Medium']) == False:
+            artWorkmedium_list = lt.newList("SINGLE_LINKED")
+            lt.addFirst(artWorkmedium_list, artwork) 
+            mp.put(catalog['Medium'], artwork['Medium'], artWorkmedium_list)
+        else: # Ya existe el medio dado
+            artWorkmedium_list = mp.get(catalog['Medium'], artwork['Medium'])['value']
+            lt.addFirst(artWorkmedium_list, artwork) 
+    return lt.size(artworksByArtist), catalog['Medium']
 
-def most_used_technique(techniques_artworks):
-    most_used_tech = list(techniques_artworks.keys())[0]
-    for tech in techniques_artworks.keys():
-        if(lt.size(techniques_artworks[tech]) > lt.size(techniques_artworks[most_used_tech])):
+def most_used_technique(techniques_artworks): # param is precisely catalog['Medium']
+    techs_keys = mp.keySet(techniques_artworks)
+    most_used_tech = lt.getElement(techs_keys,1) # Inicialización
+    for tech in lt.iterator(techs_keys):
+        if(lt.size(mp.get(techniques_artworks, tech)['value']) > lt.size(mp.get(techniques_artworks, most_used_tech)['value'])):
             most_used_tech = tech
     return most_used_tech
 

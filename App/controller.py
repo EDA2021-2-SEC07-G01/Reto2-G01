@@ -69,6 +69,7 @@ def loadArtworks(catalog):
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
         model.addDateAcquired(catalog, artwork)
+        model.addartworkstoArtists(catalog, artwork)
 
 # Funciones de ordenamiento
 def sortArtworks(sublist, sorting_method):
