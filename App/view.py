@@ -47,8 +47,6 @@ def printMenu():
     print("4 - Clasificar las obras de un artista por técnica")
     print("5 - Clasificar la obra por la nacionalidad de sus creadores")
     print("6 - Transportar obras de un departamento")
-    print("7 - Las n obras más antiguas dado un medio") #Requerimiento Lab 5
-    print("8 - Obras por nacionalidad") #Requerimiento Lab 6
     print("0 - Salir")
 
 def initCatalog(option): # the option is for selecting the datastructure
@@ -89,8 +87,8 @@ def artworks_department(catalog, department):
 def most_used_technique(techniques_artworks):
     return controller.most_used_technique(techniques_artworks)
 
-def uploadMediumDateMap(catalog):
-    return controller.MediumDateMap(catalog)
+def artist_nationality(catalog):
+    return controller.artist_nationality(catalog)
 
 # PRINT Functions
 
@@ -122,16 +120,16 @@ def printResultsArtists(ord_list, sample = 3):
     if size > sample:
         print("Los primeros ", sample, "artistas en el rango dado son: ")
         i = 1
-        j = 0
+        j = -2
         while i <= sample:
             artist = lt.getElement(ord_list, i)
-            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
+            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
             i += 1
         print("----------------------------------------------------------------------------------")
         print("Los últimos ", sample, "artistas en el rango dado son: ")
-        while j < sample:
-            artist = lt.getElement(ord_list, size - j )
-            print("Nombre: " + artist["DisplayName"] + ", Nacimiento: " + artist["BeginDate"] + ", Fallecimiento: " + artist["EndDate"] + ", Nacionalidad: " + artist["Nationality"] + ", Género: " + artist["Gender"])
+        while j+2 < sample:
+            artist = lt.getElement(ord_list, size + j )
+            print("Nombre: " + artist["name"] + ", Nacimiento: " + artist["birth_date"] + ", Fallecimiento: " + artist["end_date"] + ", Nacionalidad: " + artist["nationality"] + ", Género: " + artist["gender"])
             j += 1
 
 def printResultsArtworksNationality(artworks_nationality):
@@ -142,7 +140,7 @@ def printResultsArtworksNationality(artworks_nationality):
     for element in artworks_nationality:
         x, y = element
         contador += 1
-        if contador == 10:
+        if contador == 11:
             break 
         table1.append([x, y])
     print(tabulate(table1,headers, tablefmt="grid"))
@@ -218,7 +216,6 @@ while True:
         loadData(catalog)
         ArtistSize(catalog)
         ArtworkSize(catalog)
-        #uploadMediumDateMap(catalog)
 
     elif int(inputs[0]) == 2:
         anio_inicial = int(input("Ingrese el año inicial: "))
@@ -245,10 +242,11 @@ while True:
         print_artworks_technique(techniques, most_used_tech)
 
     elif int(inputs[0]) == 5:
-        list = artworks_artistnationality(catalog)
-        printResultsArtworksNationality(list)
-        names, artworks = controller.InfoArtworksNationality(catalog, list)
-        printResultsNationalityInfo(names, artworks)
+        nationality = artist_nationality(catalog)
+        print(nationality)
+        #printResultsArtworksNationality(nationality, values)
+        #names, artworks = controller.InfoArtworksNationality(catalog, list)
+        #printResultsNationalityInfo(names, artworks)
         
     elif int(inputs[0]) == 6:
         department = input("Departamento del museo: ")
@@ -257,18 +255,6 @@ while True:
         print5expensive(artworks_price)
         print("----------------------------------------------------------------------------------")
         print5oldest(artworks_date)
-    
-    elif int(inputs[0]) == 7: #Requerimiento Lab 5
-        medium = input("Indique el medio o técnica de interés: ")
-        medium_map = controller.MediumSpecificList(catalog, medium)
-        sorted_list = controller.sortMediumDates(medium_map)
-        n = int(input('Ingrese el número de obras antiguas que desea ver teniendo en cuenta el medio ('+medium+'): '))
-        printMediumOldest(sorted_list, n)
-
-    elif int(inputs[0]) == 8: #Requerimiento Lab 6
-        nationality = input("Indique la nacionalidad de interés: ")
-        nationality_map = controller.NationalityMap(catalog, nationality)
-        print("El número de obras asociadas la nacionalidad "+nationality+ " es: "+str(nationality_map[1]))
 
     else:
         sys.exit(0)

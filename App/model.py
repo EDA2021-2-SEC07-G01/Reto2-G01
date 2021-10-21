@@ -61,6 +61,7 @@ def initCatalog(option):
         catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED") #Función de comparación
         catalog['Medium'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['artistsDict'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['nationalityDict'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['ConstituentID'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['BeginDate'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['DateAcquired'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
@@ -132,7 +133,13 @@ def addartworkstoArtists(catalog, artwork):
             aux = mp.get(catalog['artistsDict'], lt.getElement(artist, 1)['name'])['value']
         lt.addFirst(aux, artwork)  
         mp.put(catalog['artistsDict'], lt.getElement(artist, 1)['name'], aux) # value es la lista del Artista
- 
+        if mp.contains(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality']) == False:
+            place = lt.newList(datastructure="SINGLE_LINKED")
+        else:
+            place = mp.get(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality'])['value'] 
+        lt.addFirst(place, artwork)  
+        mp.put(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality'], place)
+
 # Funciones para creacion de datos
 
 def newArtist(name, birth_date, end_date, nationality, gender, const_id):
@@ -152,18 +159,6 @@ def newArtwork(name, date_acqu, credit, artist, date, medium, dimensions, depart
 
 # Funciones de CONSULTA
 
-def MediumDateMap(catalog):
-    for artwork in lt.iterator(catalog["artworks"]):
-        artwork_medium = artwork["Medium"]
-        if mp.contains(catalog['Medium'], artwork_medium) == False:
-            medium_list = lt.newList(datastructure='SINGLE_LINKED')
-            lt.addFirst(medium_list, artwork)
-            mp.put(catalog['Medium'], artwork_medium, medium_list)
-        else:
-            medium_list = mp.get(catalog['Medium'], artwork_medium)['value']
-            lt.addFirst(medium_list, artwork)
-    return catalog
-
 def ArtworkConsituentID(artwork):
     id_list = lt.newList(datastructure='SINGLE_LINKED')
     id_artist = artwork["ConstituentID"][1:-1].split(",")
@@ -175,7 +170,7 @@ def NationalityMap(catalog):
     contador = 1
     map_nationality = mp.newMap(maptype="PROBING", loadfactor=0.5)
     map_values = mp.newMap(maptype="PROBING", loadfactor=0.5)
-    ids = lt.iterator(mp.keySet(catalog["ConstituentID"]))
+    ids = mp.keySet(catalog["ConstituentID"])
     for artwork in catalog['artworks']:
         artwork_artist = ArtworkConsituentID(artwork)
         for artist in artwork_artist:
@@ -193,12 +188,6 @@ def NationalityMap(catalog):
                     lt.addFirst(list_map, information)
                     mp.put(map_values, nationality, contador)
     return map_nationality, map_values
-
-def MediumSpecificList(catalog, medium):
-    medium_map = catalog['Medium']
-    if mp.contains(medium_map, medium):
-        medium_elements = mp.get(medium_map, medium)['value']
-    return medium_elements
 
 def give_artists_byID(catalog, const_ids):
     ids_list = const_ids[1:-1].split(",") # Since split is used, this is a native python list
@@ -244,7 +233,7 @@ def artworksDates(catalog, date_inicial, date_final): #Using
     sorted_list = sortArtworksDates(artworks_year_list)
     return sorted_list, contador 
 
-def artist_technique(catalog, artist_name):
+def artist_technique(catalog, artist_name): #Using
     artworksByArtist = mp.get(catalog['artistsDict'], artist_name)['value']
     for artwork in lt.iterator(artworksByArtist):
         if mp.contains(catalog['Medium'], artwork['Medium']) == False:
@@ -264,40 +253,13 @@ def most_used_technique(techniques_artworks): # param is precisely catalog['Medi
             most_used_tech = tech
     return most_used_tech
 
-def artworks_artistnationality(catalog):
-    id_list = lt.newList(datastructure='ARRAY_LIST')
-    for artwork in lt.iterator(catalog["artworks"]):
-        id_artist = artwork["ConstituentID"][1:-1].split(",")
-        for number in id_artist:
-            lt.addLast(id_list, number.strip())
-    nationality = {}
-    for artist in lt.iterator(catalog["artists"]):
-        for id_artist in lt.iterator(id_list):
-            if id_artist == artist['const_id'].strip():
-                artist_place = artist['nationality']
-                if artist['nationality'] == "":
-                    artist_place= "Nationality unknown"
-                if not artist_place in nationality:
-                    nationality[artist_place] = 1
-                else:
-                    nationality[artist_place] += 1
-    sorted_dicc = sorted(nationality.items(), key=operator.itemgetter(1), reverse=True)
-    return sorted_dicc 
-
-def InfoArtworksNationality(catalog, list):
-    place, num = list[0]
-    list_artist_id = lt.newList("ARRAY_LIST")
-    list_artist_name = lt.newList("ARRAY_LIST")
-    for artist in lt.iterator(catalog['artists']):
-        if artist['nationality'] == place:
-            lt.addLast(list_artist_id, artist['const_id'])
-            lt.addLast(list_artist_name, artist['name'])
-    artworks_list = lt.newList(datastructure='ARRAY_LIST')
-    for artwork in lt.iterator(catalog["artworks"]):
-        for id_artist in lt.iterator(list_artist_id):
-            if id_artist in artwork["ConstituentID"]:
-                lt.addLast(artworks_list, artwork)
-    return list_artist_name, artworks_list
+def artist_nationality(catalog): #Using 
+    nationalities = mp.keySet(catalog['nationalityDict'])
+    dicc = {}
+    for nationality in lt.iterator(nationalities):
+        dicc[nationality] = lt.size(mp.get(catalog['nationalityDict'], nationality)['value'])
+    sorted_dicc = sorted(dicc.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_dicc
 
 def artworks_department(catalog, department):
     artworks = lt.newList("ARRAY_LIST") # lista de las obras de un departamento dado

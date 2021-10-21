@@ -59,7 +59,6 @@ def loadArtists(catalog):
         model.addBirthday(catalog, artist)
         model.addConstituentID(catalog, artist)
 
-
 def loadArtworks(catalog):
     """
     Carga todas las obras de arte del archivo y las agrega a la lista de obras
@@ -87,7 +86,7 @@ def artist_technique(catalog, artist_name):
     return model.artist_technique(catalog, artist_name)
 
 def artworks_artistnationality(catalog):
-    return model.artworks_artistnationality(catalog)
+    return model.NationalityMap(catalog)
 
 def InfoArtworksNationality(catalog, list):
     return model.InfoArtworksNationality(catalog, list)
@@ -104,14 +103,8 @@ def give_artists_byID(catalog, const_ids):
 def most_used_technique(techniques_artworks):
     return model.most_used_technique(techniques_artworks)
 
-def MediumDateMap(catalog):
-    return model.MediumDateMap(catalog)
-
-def NationalityMap(catalog):
-    return model.NationalityMap(catalog)
-
-def MediumSpecificList(catalog, medium):
-    return model.MediumSpecificList(catalog, medium)
+def artist_nationality(catalog):
+    return model.artist_nationality(catalog)
 
 def sortMediumDates(list):
     return model.sortMediumDates(list)
