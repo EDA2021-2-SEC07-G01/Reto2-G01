@@ -167,9 +167,23 @@ def printResultsNationalityInfo(names, artworks_list, sample=3):
             j += 1
 
 def print_artworks_technique(techniques_dic, most_used_tech):
-    artworks = mp.get(techniques_dic,most_used_tech)['value']
-    for artwork in lt.iterator(artworks):
-        print("Título: " + artwork["Title"] + ", Fecha: " + artwork["Date"] + ", Medio: " + artwork["Medium"] + ", Dimensiones: " + artwork["Dimensions"])
+        size = lt.size(mp.get(techniques_dic,most_used_tech)['value'])
+        if size < 3:
+            print("No hay suficientes obras para imprimir")
+        else:
+            print("Las primeras ", str(3), "obras de la técnica son: ")
+            i = 1
+            j = -2
+            while i <= 3:
+                artwork = lt.getElement(mp.get(techniques_dic,most_used_tech)['value'], i)
+                print("Título: " + artwork["Title"] + ", Fecha: " + artwork["Date"] + ", Medio: " + artwork["Medium"] + ", Dimensiones: " + artwork["Dimensions"])
+                i += 1
+            print("----------------------------------------------------------------------------------")
+            print("Las últimas ", str(3), "obras de la técnica son: ")
+            while j+2 < 3:
+                artwork = lt.getElement(mp.get(techniques_dic,most_used_tech)['value'], size + j)
+                print("Título: " + artwork["Title"] + ", Fecha: " + artwork["Date"] + ", Medio: " + artwork["Medium"] + ", Dimensiones: " + artwork["Dimensions"])
+                j += 1
 
 def print5expensive(artworks_price, sample=5):
     size = lt.size(artworks_price)
@@ -238,12 +252,12 @@ while True:
 
     elif int(inputs[0]) == 4:
         name_artist = input("Ingrese el nombre del artista para clasificar sus obras por técnica: ")
-        contador, techniques = artist_technique(catalog, name_artist)
+        contador, techniques, information = artist_technique(catalog, name_artist)
         print("El número total de obras para: " + name_artist + " son: " + str(contador))
-        print("El número total de técnicas utilizadas por " + name_artist + " son: " + str(len(techniques)))
-        most_used_tech = most_used_technique(techniques)
+        print("El número total de técnicas utilizadas por " + name_artist + " son: " + str(techniques))
+        most_used_tech = most_used_technique(information)
         print("La técnica más utilizada por " + name_artist + "es: " + most_used_tech)
-        print_artworks_technique(techniques, most_used_tech)
+        print_artworks_technique(information, most_used_tech)
 
     elif int(inputs[0]) == 5:
         nationality, top, information = artist_nationality(catalog)

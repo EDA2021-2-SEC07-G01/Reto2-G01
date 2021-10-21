@@ -233,7 +233,7 @@ def artworksDates(catalog, date_inicial, date_final): #Using
     sorted_list = sortArtworksDates(artworks_year_list)
     return sorted_list, contador 
 
-def artist_technique(catalog, artist_name): #Using
+def artist_technique(catalog, artist_name): #Using 
     artworksByArtist = mp.get(catalog['artistsDict'], artist_name)['value']
     for artwork in lt.iterator(artworksByArtist):
         if mp.contains(catalog['Medium'], artwork['Medium']) == False:
@@ -243,9 +243,10 @@ def artist_technique(catalog, artist_name): #Using
         else: # Ya existe el medio dado
             artWorkmedium_list = mp.get(catalog['Medium'], artwork['Medium'])['value']
             lt.addFirst(artWorkmedium_list, artwork) 
-    return lt.size(artworksByArtist), catalog['Medium']
+    return lt.size(artworksByArtist), mp.size(catalog['Medium']), catalog['Medium']
 
 def most_used_technique(techniques_artworks): # param is precisely catalog['Medium']
+    breakpoint()
     techs_keys = mp.keySet(techniques_artworks)
     most_used_tech = lt.getElement(techs_keys,1) # Inicialización
     for tech in lt.iterator(techs_keys):
