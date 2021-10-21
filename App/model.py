@@ -246,7 +246,6 @@ def artist_technique(catalog, artist_name): #Using
     return lt.size(artworksByArtist), mp.size(catalog['Medium']), catalog['Medium']
 
 def most_used_technique(techniques_artworks): # param is precisely catalog['Medium']
-    breakpoint()
     techs_keys = mp.keySet(techniques_artworks)
     most_used_tech = lt.getElement(techs_keys,1) # Inicialización
     for tech in lt.iterator(techs_keys):
