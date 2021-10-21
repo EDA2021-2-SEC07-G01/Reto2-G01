@@ -65,6 +65,7 @@ def initCatalog(option):
         catalog['ConstituentID'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['BeginDate'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
         catalog['DateAcquired'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
+        catalog['Department'] = mp.newMap(maptype="PROBING", loadfactor=0.5)
     return catalog
 
 # Funciones para AGREGAR informacion al catalogo
@@ -73,6 +74,8 @@ def addArtist(catalog, artist):
     """
     Adiciona un artista a la lista de artistas
     """
+    if artist['Nationality'] == "":
+        artist['Nationality'] = 'Nationality unknown'
     aux = newArtist(artist['DisplayName'], artist['BeginDate'], artist['EndDate'], artist['Nationality'], artist['Gender'], artist['ConstituentID'])
     lt.addFirst(catalog['artists'], aux)
 
@@ -88,6 +91,9 @@ def addBirthday(catalog, artist):
     """
     Agrega el par k:v al mapa de BeginDate del catálogo
     """
+    if artist['Nationality'] == "":
+        artist['Nationality'] = 'Nationality unknown'
+
     if mp.contains(catalog['BeginDate'], artist['BeginDate']) == False:
         aux = lt.newList(datastructure="SINGLE_LINKED")
     else:
@@ -113,6 +119,9 @@ def addConstituentID(catalog, artist):
     """
     Agrega el par k:v al mapa de ConstID del catálogo
     """
+    if artist['Nationality'] == "":
+        artist['Nationality'] = 'Nationality unknown'
+    
     if mp.contains(catalog['ConstituentID'], artist['ConstituentID']) == False:
         aux = lt.newList(datastructure="SINGLE_LINKED")
     else:
@@ -131,14 +140,28 @@ def addartworkstoArtists(catalog, artwork):
             aux = lt.newList(datastructure="SINGLE_LINKED")
         else:
             aux = mp.get(catalog['artistsDict'], lt.getElement(artist, 1)['name'])['value']
-        lt.addFirst(aux, artwork)  
+        new_artwork = newArtwork(artwork['Title'], artwork['DateAcquired'], artwork['CreditLine'], artwork['ConstituentID'], artwork['Date'], artwork['Medium'], artwork['Dimensions'], artwork['Department'], artwork['Depth (cm)'], artwork['Height (cm)'], artwork['Length (cm)'], artwork['Weight (kg)'], artwork['Width (cm)'], artwork['Seat Height (cm)'])
+        lt.addFirst(aux, new_artwork)
         mp.put(catalog['artistsDict'], lt.getElement(artist, 1)['name'], aux) # value es la lista del Artista
         if mp.contains(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality']) == False:
             place = lt.newList(datastructure="SINGLE_LINKED")
         else:
             place = mp.get(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality'])['value'] 
-        lt.addFirst(place, artwork)  
+        lt.addFirst(place, new_artwork)  
         mp.put(catalog['nationalityDict'], lt.getElement(artist, 1)['nationality'], place)
+
+def addArtworkDepartment(catalog, artwork):
+    """
+    Agrega una obra de arte a su departamento correspondiente
+    """
+    artworkNew = newArtwork(artwork['Title'], artwork['DateAcquired'], artwork['CreditLine'], artwork['ConstituentID'], artwork['Date'], artwork['Medium'], artwork['Dimensions'], artwork['Department'], 
+    artwork['Depth (cm)'], artwork['Height (cm)'], artwork['Length (cm)'], artwork['Weight (kg)'], artwork['Width (cm)'], artwork['Seat Height (cm)'])
+    if mp.contains(catalog['Department'], artworkNew['Department']) == False:
+        aux = lt.newList(datastructure="SINGLE_LINKED")
+    else:
+        aux = mp.get(catalog['Department'], artworkNew['Department'])['value']
+    lt.addFirst(aux, artworkNew)  
+    mp.put(catalog['Department'], artworkNew['Department'], aux)
 
 # Funciones para creacion de datos
 
@@ -165,29 +188,6 @@ def ArtworkConsituentID(artwork):
     for number in id_artist:
         lt.addLast(id_list, number.strip())
     return id_list
-
-def NationalityMap(catalog):
-    contador = 1
-    map_nationality = mp.newMap(maptype="PROBING", loadfactor=0.5)
-    map_values = mp.newMap(maptype="PROBING", loadfactor=0.5)
-    ids = mp.keySet(catalog["ConstituentID"])
-    for artwork in catalog['artworks']:
-        artwork_artist = ArtworkConsituentID(artwork)
-        for artist in artwork_artist:
-            if artist in ids:
-                information = mp.get(catalog['ConstituentID'], artist)['value']
-                nationality = information['nationality']
-                if mp.contains(map_nationality, nationality) == False:
-                    list = lt.newList(datastructure='SINGLE_LINKED')
-                    lt.addFirst(list, information)
-                    mp.put(map_nationality, nationality, information)
-                    mp.put(map_values, nationality, contador)
-                else:
-                    contador += 1
-                    list_map = mp.get(map_nationality, nationality)['value']
-                    lt.addFirst(list_map, information)
-                    mp.put(map_values, nationality, contador)
-    return map_nationality, map_values
 
 def give_artists_byID(catalog, const_ids):
     ids_list = const_ids[1:-1].split(",") # Since split is used, this is a native python list
@@ -259,11 +259,28 @@ def artist_nationality(catalog): #Using
     for nationality in lt.iterator(nationalities):
         dicc[nationality] = lt.size(mp.get(catalog['nationalityDict'], nationality)['value'])
     sorted_dicc = sorted(dicc.items(), key=operator.itemgetter(1), reverse=True)
-    return sorted_dicc
+    top_nationality, number = sorted_dicc[0]
+    information = mp.get(catalog['nationalityDict'], top_nationality)['value']
+    return sorted_dicc, top_nationality, information
+
+def topNationalityArtist(catalog, nationality):
+    names = lt.newList(datastructure="SINGLE_LINKLED")
+    nationalities = catalog['nationalityDict']
+    if mp.contains(nationalities, nationality):
+        artworks = mp.get(nationalities, nationality)['value']
+        for artwork in lt.iterator(artworks):
+            conversion = ArtworkConsituentID(artwork)
+            sub_names = lt.newList(datastructure="SINGLE_LINKLED")
+            for ids in lt.iterator(conversion):
+                if mp.contains(catalog['ConstituentID'], ids):
+                    sub_name = lt.getElement(mp.get(catalog['ConstituentID'], ids)['value'], 1)['name']
+                    lt.addFirst(sub_names, sub_name)
+            lt.addFirst(names, sub_names)
+    return names
 
 def artworks_department(catalog, department):
     artworks = lt.newList("ARRAY_LIST") # lista de las obras de un departamento dado
-    for artwork in lt.iterator(catalog["artworks"]):
+    for artwork in lt.iterator(mp.get(catalog['Department'], department)['value']):
         if artwork["Department"] == department:
             artwork["Mayor_precio"] = 48
             if artwork['Weight'] == "":

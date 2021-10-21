@@ -69,6 +69,7 @@ def loadArtworks(catalog):
         model.addArtwork(catalog, artwork)
         model.addDateAcquired(catalog, artwork)
         model.addartworkstoArtists(catalog, artwork)
+        model.addArtworkDepartment(catalog, artwork)
 
 # Funciones de ordenamiento
 def sortArtworks(sublist, sorting_method):
@@ -105,6 +106,9 @@ def most_used_technique(techniques_artworks):
 
 def artist_nationality(catalog):
     return model.artist_nationality(catalog)
+
+def topNationalityArtist(catalog, nationality):
+    return model.topNationalityArtist(catalog, nationality)
 
 def sortMediumDates(list):
     return model.sortMediumDates(list)

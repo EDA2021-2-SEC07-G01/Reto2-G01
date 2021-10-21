@@ -27,6 +27,7 @@ import ipdb
 from tabulate import tabulate
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from collections import OrderedDict
 assert cf
 
 default_limit = 1000
@@ -89,6 +90,9 @@ def most_used_technique(techniques_artworks):
 
 def artist_nationality(catalog):
     return controller.artist_nationality(catalog)
+
+def topNationalityArtist(catalog, nationality):
+    return controller.topNationalityArtist(catalog, nationality)
 
 # PRINT Functions
 
@@ -153,13 +157,13 @@ def printResultsNationalityInfo(names, artworks_list, sample=3):
         j = 0
         while i <= sample:
             artworks = lt.getElement(artworks_list, i)
-            print("Título: "+ artworks['Title']+", Artistas: " + lt.getElement(names, i)+", Fecha: "+ artworks['Date']+", Medio: "+artworks['Medium']+ ", Dimensiones: "+artworks['Dimensions'])
+            print("Título: "+ artworks['Title']+", Artistas: " + lt.getElement(names, i)['first']['info']+", Fecha: "+ artworks['Date']+", Medio: "+artworks['Medium']+ ", Dimensiones: "+artworks['Dimensions'])
             i += 1
         print("----------------------------------------------------------------------------------")
         print("Las últimas ", sample, "tres obras del TOP¨1 de nacionalidad son: ")
         while j < sample:
             artworks = lt.getElement(artworks_list, size - j )
-            print("Título: "+ artworks['Title']+", Artistas: " + lt.getElement(names, j)+", Fecha: "+ artworks['Date']+", Medio: "+artworks['Medium']+ ", Dimensiones: "+artworks['Dimensions'])
+            print("Título: "+ artworks['Title']+", Artistas: " + lt.getElement(names, j)['first']['info']+", Fecha: "+ artworks['Date']+", Medio: "+artworks['Medium']+ ", Dimensiones: "+artworks['Dimensions'])
             j += 1
 
 def print_artworks_technique(techniques_dic, most_used_tech):
@@ -242,11 +246,12 @@ while True:
         print_artworks_technique(techniques, most_used_tech)
 
     elif int(inputs[0]) == 5:
-        nationality = artist_nationality(catalog)
-        print(nationality)
-        #printResultsArtworksNationality(nationality, values)
-        #names, artworks = controller.InfoArtworksNationality(catalog, list)
-        #printResultsNationalityInfo(names, artworks)
+        nationality, top, information = artist_nationality(catalog)
+        names = topNationalityArtist(catalog, top)
+        #print(names)
+        #print(information)
+        printResultsArtworksNationality(nationality)
+        printResultsNationalityInfo(names, information)
         
     elif int(inputs[0]) == 6:
         department = input("Departamento del museo: ")
